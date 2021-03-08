@@ -1,0 +1,21 @@
+version: "3.8"
+services:
+  taskmysql:
+    networks:
+      - dbs 
+    image: taskeducmysql:0.2.0
+    build:
+      context: .
+      dockerfile: dockerfile 
+    container_name: taskeduc_db
+    environment:
+      - MYSQL_DATABASE=TAREFAS_DIARIAS
+      - MYSQL_PASSWORD= 
+      - MYSQL_USER=root
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+
+    ports: 
+      - '3306:3306'
+networks: 
+  dbs:
+    

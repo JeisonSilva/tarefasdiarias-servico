@@ -45,4 +45,21 @@ public class AlunoResource {
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GET
+    @Path("/colegasclasse/{email}")
+    @APIResponse(responseCode = "200")
+    @APIResponse(responseCode = "404", description = "Não existe nenhum aluno matriculado")
+    @APIResponse(responseCode = "500", description = "Falha no servidor")
+    @Operation(summary = "Retorna todos os alunos matriculados por professor")
+    public Response getColegasClasse(@PathParam("email")String email) {
+        try {
+            List<AlunoMatriculadoDto> alunosMatriculados =  this.alunoMatriculadoApp.obterAlunosMatriculadosPorEmailAluno(email);
+            return Response.status(Status.OK).entity(alunosMatriculados).build();
+        } catch (NotFoundException e) {
+            return Response.status(Status.NOT_FOUND).build();
+        }catch(InternalServerErrorException | SQLException e) {
+            return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

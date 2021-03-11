@@ -42,8 +42,10 @@ public class PerfilRepository implements IPerfilRepository {
 
     private PreparedStatement criarQueryObterPerfilPorEmail(String email, Connection connection) throws SQLException {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("SELECT a.email as emailAluno, a.nome as nomeAluno, p.email as emailProfessor, p.nome as nomeProfessor ");
+        stringBuilder.append("SELECT a.email as emailAluno, a.nome as nomeAluno, p.email as emailProfessor, p.nome as nomeProfessor, c.professores_email as emailProfessorAluno ");
         stringBuilder.append("FROM logins l ");
+        stringBuilder.append("LEFT JOIN matriculas m ON l.email = m.alunos_email ");
+        stringBuilder.append("LEFT JOIN classes c ON m.classes_codigo = c.codigo ");
         stringBuilder.append("LEFT JOIN alunos a ON l.email = a.email ");
         stringBuilder.append("LEFT JOIN professores p ON l.email = p.email ");        
         stringBuilder.append("WHERE l.email = ? and l.habilitado = 1 and l.autorizado=1");
@@ -57,7 +59,7 @@ public class PerfilRepository implements IPerfilRepository {
         while (dados.next()) {
             String emailProfessor = dados.getString("emailProfessor");
             String emailAluno = dados.getString("emailAluno");
-
+            
             if(emailAluno != null && !emailAluno.isEmpty())
                 return criarPerfilAluno(dados);
 
@@ -71,7 +73,8 @@ public class PerfilRepository implements IPerfilRepository {
     private PerfilDto criarPerfilAluno(ResultSet dados) throws SQLException {
         String email = dados.getString("emailAluno");
         String nome = dados.getString("nomeAluno");
-        return new PerfilDto(email, nome);
+        String emailProfessorAluno = dados.getString("emailProfessorAluno");
+        return new PerfilDto(email, nome, emailProfessorAluno);
     }
 
     private PerfilDto criarPerfilProfessor(ResultSet dados) throws SQLException {

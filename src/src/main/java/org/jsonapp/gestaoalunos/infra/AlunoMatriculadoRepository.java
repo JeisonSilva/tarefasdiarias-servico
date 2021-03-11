@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
 
+import org.jsonapp.gestaoadministrativa.objetosvalor.AlunoId;
 import org.jsonapp.gestaoalunos.AlunoMatriculadoDto;
 import org.jsonapp.gestaoalunos.IAlunoMatriculadoRepository;
 import org.jsonapp.gestaoalunos.objetosvalor.ProfessorId;
@@ -43,8 +44,39 @@ public class AlunoMatriculadoRepository implements IAlunoMatriculadoRepository {
         return alunosMatriculados;
     }
 
+    @Override
+    public List<AlunoMatriculadoDto> obterAlunosMatriculadosPorEmailAluno(AlunoId id) {
+        List<AlunoMatriculadoDto> alunosMatriculados = null;
+
+        try {
+            PreparedStatement preparedStatement = criarQueryRetornarndoAlunosMatriculadosPorEmailALuno(id,
+                this.agroalDataSource.getConnection());
+            alunosMatriculados = estanciarListaDeAlunos(preparedStatement);
+            finalize();
+        } catch (Throwable e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return alunosMatriculados;
+    }
+
+
     private PreparedStatement criarQueryRetornarndoAlunosMatriculadosPorProfessor(ProfessorId id,
             Connection connection) throws SQLException {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("SELECT a.email, a.nome  ");
+        stringBuilder.append("FROM alunos a ");
+        stringBuilder.append("INNER JOIN matriculas m ON a.email = m.alunos_email ");
+        stringBuilder.append("INNER JOIN classes c ON m.classes_codigo = c.codigo ");
+        stringBuilder.append("INNER JOIN professores p ON c.professores_email = p.email ");
+        stringBuilder.append("WHERE p.email = ?");
+        PreparedStatement preparedStatement = connection.prepareStatement(stringBuilder.toString());
+        preparedStatement.setString(1, id.toString());
+
+        return preparedStatement;
+    }
+
+    private PreparedStatement criarQueryRetornarndoAlunosMatriculadosPorEmailALuno(AlunoId id, Connection connection) throws SQLException {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("SELECT a.email, a.nome  ");
         stringBuilder.append("FROM alunos a ");
@@ -73,5 +105,5 @@ public class AlunoMatriculadoRepository implements IAlunoMatriculadoRepository {
     protected void finalize() throws Throwable {
         this.agroalDataSource.flush(FlushMode.ALL);
     }
-    
+
 }
